@@ -4,9 +4,9 @@
 #define MAT_TYPE float
 
 int main(void) {
-    simpmat av = matf_from(NULL, 2, 2);
+    simpmat av = mat_from(NULL, 2, 2);
     av.mat = (float[]){2,1,2,4};
-    printf("%f", matf_index(av,1,1));
+    mat_print(av);
 
     return 0;
 }
