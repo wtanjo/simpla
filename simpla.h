@@ -16,12 +16,12 @@ typedef struct {
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
 sm mat_malloc(size_t rows, size_t cols);
 void mat_free(sm mat);
+void mat_print(sm mat);
 void mat_fill(sm mat, MAT_TYPE e);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
-void mat_add(sm res, sm mat1, sm mat2);
-void mat_minus(sm res, sm mat1, sm mat2);
-void mat_dot(sm mat1, sm mat2);
-void mat_print(sm mat);
+void mat_add(sm dst, sm mat1, sm mat2);
+void mat_minus(sm dst, sm mat1, sm mat2);
+void mat_dot(sm dst, sm mat1, sm mat2);
 
 #endif // SIMPLA_H_

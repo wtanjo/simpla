@@ -33,6 +33,17 @@ void mat_free(sm mat) {
     return;
 }
 
+void mat_print(sm mat) {
+    for (size_t r = 0; r < mat.rows; r++) {
+        for (size_t c = 0; c < mat.cols; c++) {
+            printf("%f ", MATI(mat, r, c));
+        }
+        printf("\n");
+    }
+    printf("\n");
+    return;
+}
+
 void mat_fill(sm mat, MAT_TYPE e) {
     for (size_t r = 0; r < mat.rows; r++) {
         for (size_t c = 0; c < mat.cols; c++) {
@@ -73,12 +84,13 @@ void mat_add(sm dst,sm mat1, sm mat2) {
     return;
 }
 
-void mat_print(sm mat) {
-    for (size_t r = 0; r < mat.rows; r++) {
-        for (size_t c = 0; c < mat.cols; c++) {
-            printf("%f ", MATI(mat, r, c));
+void mat_minus(sm dst, sm mat1, sm mat2) {
+    assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
+    assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    for (size_t r = 0; r < dst.rows; r++) {
+        for (size_t c = 0; c < dst.cols; c++) {
+            MATI(dst, r, c) = MATI(mat1, r, c) - MATI(mat2, r, c);
         }
-        printf("\n");
     }
     return;
 }
