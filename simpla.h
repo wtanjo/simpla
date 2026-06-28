@@ -3,18 +3,22 @@
 
 #include <stddef.h>
 
+#ifndef MAT_TYPE
+#define MAT_TYPE float
+#endif
+
 typedef struct {
-    float* mat;
+    MAT_TYPE* mat;
     size_t rows; // number of rows
     size_t cols; // number of columns
-} smf;
+} simpmat;
 
-smf matf_from(float* array, size_t rows, size_t cols);
-smf matf_malloc(size_t rows, size_t cols);
-void matf_free(smf mat);
-float matf_index(smf mat, size_t row, size_t col);
-void matf_add(smf mat1, smf mat2);
-void matf_minus(smf mat1, smf mat2);
-void matf_dot(smf mat1, smf mat2);
+simpmat matf_from(MAT_TYPE* array, size_t rows, size_t cols);
+simpmat matf_malloc(size_t rows, size_t cols);
+void matf_free(simpmat mat);
+MAT_TYPE matf_index(simpmat mat, size_t row, size_t col);
+void matf_add(simpmat mat1, simpmat mat2);
+void matf_minus(simpmat mat1, simpmat mat2);
+void matf_dot(simpmat mat1, simpmat mat2);
 
 #endif // SIMPLA_H
