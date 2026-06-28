@@ -1,25 +1,27 @@
-#ifndef SIMPLA_H
-#define SIMPLA_H
+#ifndef SIMPLA_H_
+#define SIMPLA_H_
 
 #include <stddef.h>
 
 #ifndef MAT_TYPE
 #define MAT_TYPE float
-#endif
+#endif // MAT_TYPE
 
 typedef struct {
-    MAT_TYPE* mat;
+    MAT_TYPE* p;
     size_t rows; // number of rows
     size_t cols; // number of columns
-} simpmat;
+} sm;
 
-simpmat mat_from(MAT_TYPE* array, size_t rows, size_t cols);
-simpmat mat_malloc(size_t rows, size_t cols);
-void mat_free(simpmat mat);
-MAT_TYPE mati(simpmat mat, size_t row, size_t col); // which means 'mat'rix 'i'ndex
-void mat_add(simpmat mat1, simpmat mat2);
-void mat_minus(simpmat mat1, simpmat mat2);
-void mat_dot(simpmat mat1, simpmat mat2);
-void mat_print(simpmat mat);
+sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
+sm mat_malloc(size_t rows, size_t cols);
+void mat_free(sm mat);
+void mat_fill(sm mat, MAT_TYPE e);
+void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
+void mat_eye(sm mat);
+void mat_add(sm res, sm mat1, sm mat2);
+void mat_minus(sm res, sm mat1, sm mat2);
+void mat_dot(sm mat1, sm mat2);
+void mat_print(sm mat);
 
-#endif // SIMPLA_H
+#endif // SIMPLA_H_
