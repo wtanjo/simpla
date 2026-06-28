@@ -11,9 +11,10 @@ typedef struct {
 
 smf matf_from(float* array, size_t rows, size_t cols);
 smf matf_malloc(size_t rows, size_t cols);
+void matf_free(smf mat);
 float matf_index(smf mat, size_t row, size_t col);
-float matf_add(smf mat1, smf mat2);
-float matf_minus(smf mat1, smf mat2);
-float matf_dot(smf mat1, smf mat2);
+void matf_add(smf mat1, smf mat2);
+void matf_minus(smf mat1, smf mat2);
+void matf_dot(smf mat1, smf mat2);
 
 #endif // SIMPLA_H

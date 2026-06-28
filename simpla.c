@@ -22,3 +22,8 @@ smf matf_malloc(size_t rows, size_t cols) {
 float matf_index(smf mat, size_t row, size_t col) {
     return mat.mat[col + mat.cols * row];
 }
+
+void matf_free(smf mat) {
+    free(mat.mat);
+    return;
+}
