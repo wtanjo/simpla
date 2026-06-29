@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "simpla.h"
 
 MAT_TYPE rand_MAT_TYPE() {
@@ -40,15 +41,6 @@ void mat_print(sm mat) {
         printf("\n");
     }
     printf("\n");
-    return;
-}
-
-void mat_fill(sm mat, MAT_TYPE e) {
-    for (size_t i = 0; i < mat.rows; i++) {
-        for (size_t j = 0; j < mat.cols; j++) {
-            MATI(mat, i, j) = e;
-        }
-    }
     return;
 }
 
@@ -103,14 +95,22 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
     return prod;
 }
 
+// try to avoid using macros in time-consuming part
 void mat_dot(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
-    mat_fill(dst, 0);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
+
+    #pragma omp parallel for
     for (size_t i = 0; i < dst.rows; i++) {
+        MAT_TYPE* drp = dp + i * dst.stride;
         for (size_t k = 0; k < mat1.cols; k++) {
-            MAT_TYPE t = MATI(mat1, i, k);
+            MAT_TYPE t = m1p[k + mat1.stride * i];
+            const MAT_TYPE* m2rp = m2p + k * mat2.stride;
             for (size_t j = 0; j < dst.cols; j++) {
-                MATI(dst, i, j) += t * MATI(mat2, k, j);
+                drp[j] += t * m2rp[j];
             }
         }
     }

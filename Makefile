@@ -1,5 +1,5 @@
 #CC ?= 
-CFLAGS ?= -Wall -Wextra
+CFLAGS ?= -Wall -Wextra -ffast-math -fopenmp
 DFLAGS ?= -fPIC -shared
 SFLAGS ?= -c
 RFLAGS ?= -O3
@@ -31,11 +31,13 @@ clean:
 	@if [ -f example ]; then rm example; fi
 
 release: simpla.c simpla.h
-	$(CC) $(CFLAGS) $(DFLAGS) -o libsimpla.so simpla.c $(RFLAGS)
-	$(CC) $(CFLAGS) $(SFLAGS) -o libsimpla.o simpla.c $(RFLAGS)
-	ar rcs libsimpla.a simpla.o
-	$(MAKE) lib
-	$(MAKE) include
+	mkdir -p lib
+	$(CC) $(CFLAGS) $(DFLAGS) -o lib/libsimpla.so simpla.c $(RFLAGS)
+	$(CC) $(CFLAGS) $(SFLAGS) -o lib/simpla.o simpla.c $(RFLAGS)
+	ar rcs lib/libsimpla.a lib/simpla.o
+	mkdir -p include
+	cp simpla.h include/
+
 
 install: lib include
 	install -Dm644 lib/* $(PREFIX)/lib/

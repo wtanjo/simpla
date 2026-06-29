@@ -3,22 +3,17 @@
 
 #define MAT_TYPE float
 
-int main(void) {
-    sm A = mat_from((float[]) {1, 2, 3,
-                               4, 5, 6,
-                               7, 8, 9},
-                    3, 3);
-    sm s1 = SLICE(A, 0, 1, 0, 2);
-    mat_print(A);
-    
-    sm B = mat_from((float[]) {1, 2, 3,
-                               4, 5, 6,
-                               8, 8, 9},
-                    3, 3);
-    sm s2 = SLICE(B, 1, 2, 0, 2);
-    mat_print(s2);
+#define N ((int)2e3)
 
-    mat_assign(s1, s2);
-    mat_print(s1);
+int main(void) {
+    sm bigm1 = mat_malloc(N, N);
+    sm bigm2 = mat_malloc(N, N);
+    sm prod = mat_malloc(N, N);
+    mat_rand(bigm1, 0, 1);
+    mat_rand(bigm2, 0, 1);
+    mat_dot(prod, bigm1, bigm2);
+    mat_free(bigm1);
+    mat_free(bigm2);
+    mat_free(prod);
     return 0;
 }
