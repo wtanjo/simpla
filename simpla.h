@@ -14,6 +14,13 @@ typedef struct {
     size_t stride; // specifically for slicing
 } sm;
 
+// MATI means 'mat'rix 'i'ndex
+#define MATI(mat, row, col) ((mat).p[(col) + (mat).stride * (row)])
+#define SLICE(mat, rowb, rowe, colb, cole) ((sm){.p = &(MATI((mat), (rowb), (colb))), \
+                                                 .rows = (rowe) - (rowb) + 1, \
+                                                 .cols = (cole) - (colb) + 1, \
+                                                 .stride = (mat).cols})
+
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
 sm mat_malloc(size_t rows, size_t cols);
 void mat_free(sm mat);

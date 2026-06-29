@@ -3,13 +3,6 @@
 #include <stdio.h>
 #include "simpla.h"
 
-// MATI means 'mat'rix 'i'ndex
-#define MATI(mat, row, col) ((mat).p[(col) + (mat).stride * (row)])
-#define SLICE(mat, rowb, rowe, colb, cole) ((sm){.p = &(MATI((mat), (rowb), (colb))), \
-                                                 .rows = (rowe) - (rowb), \
-                                                 .cols = (cole) - (colb), \
-                                                 .stride = (mat).cols})
-
 MAT_TYPE rand_MAT_TYPE() {
     return (MAT_TYPE)rand() / (MAT_TYPE)RAND_MAX;
 }
