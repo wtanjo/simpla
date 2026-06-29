@@ -30,9 +30,11 @@ void mat_free(sm mat) {
 }
 
 void mat_print(sm mat) {
+    MAT_TYPE* mp = mat.p;
     for (size_t i = 0; i < mat.rows; i++) {
+        MAT_TYPE* mrp = mp + i * mat.stride;
         for (size_t j = 0; j < mat.cols; j++) {
-            printf("%f ", MATI(mat, i, j));
+            printf("%f ", mrp[j]);
         }
         printf("\n");
     }
@@ -40,12 +42,31 @@ void mat_print(sm mat) {
     return;
 }
 
+void mat_fill(sm mat, MAT_TYPE e) {
+    if (mat.cols == mat.stride) {
+        memset(mat.p, e, sizeof(MAT_TYPE) * mat.rows * mat.cols);
+        return;
+    } else {
+        MAT_TYPE* mp = mat.p;
+        for (size_t i = 0; i < mat.rows; i++) {
+            MAT_TYPE* mrp = mp + i * mat.stride;
+            for (size_t j = 0; j < mat.cols; j++) {
+                memset(mrp, e, sizeof(MAT_TYPE) * mat.cols);
+            }
+        }
+    }
+    return;
+}
+
 // randomize mat with (pseudo) random values between lower bound l and upper bound u
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
     assert(u > l);
+    MAT_TYPE* mp = mat.p;
+    
     for (size_t i = 0; i < mat.rows; i++) {
+        MAT_TYPE* mrp = mp + i * mat.stride;
         for (size_t j = 0; j < mat.cols; j++) {
-            MATI(mat, i, j) = (MAT_TYPE)xorshift64() / (MAT_TYPE)UINT64_MAX * (u - l) + l;
+            mrp[j] = (MAT_TYPE)xorshift64() / (MAT_TYPE)UINT64_MAX * (u - l) + l;
         }
     }
     return;
@@ -54,8 +75,10 @@ void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
 void mat_eye(sm mat) {
     assert(mat.rows == mat.cols);
     mat_fill(mat, 0);
-    for (size_t i = 0; i < mat.rows; i++) {
-        MATI(mat, i, i) = 1;
+    MAT_TYPE* mp = mat.p;
+
+    for (size_t i = 0; i < (mat.rows - 1) * mat.stride + mat.cols; i += mat.stride + 1) {
+        mp[i] = 1;
     }
     return;
 }
@@ -63,9 +86,19 @@ void mat_eye(sm mat) {
 void mat_add(sm dst,sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    MAT_TYPE* restrict drp;
+    const MAT_TYPE* restrict m1rp;
+    const MAT_TYPE* restrict m2rp;
+
     for (size_t i = 0; i < dst.rows; i++) {
+        drp = dp + i * dst.stride;
+        m1rp = m1p + i * mat1.stride;
+        m2rp = m2p + i * mat2.stride;
         for (size_t j = 0; j < dst.cols; j++) {
-            MATI(dst, i, j) = MATI(mat1, i, j) + MATI(mat2, i, j);
+            drp[j] = m1rp[j] + m2rp[j];
         }
     }
     return;
@@ -74,9 +107,19 @@ void mat_add(sm dst,sm mat1, sm mat2) {
 void mat_minus(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    MAT_TYPE* restrict drp;
+    const MAT_TYPE* restrict m1rp;
+    const MAT_TYPE* restrict m2rp;
+
     for (size_t i = 0; i < dst.rows; i++) {
+        drp = dp + i * dst.stride;
+        m1rp = m1p + i * mat1.stride;
+        m2rp = m2p + i * mat2.stride;
         for (size_t j = 0; j < dst.cols; j++) {
-            MATI(dst, i, j) = MATI(mat1, i, j) - MATI(mat2, i, j);
+            drp[j] = m1rp[j] - m2rp[j];
         }
     }
     return;
@@ -85,8 +128,11 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
 MAT_TYPE vec_dot(sm mat1, sm mat2) {
     assert(mat1.rows == 1 && mat2.cols == 1 && mat1.cols == mat2.rows);
     MAT_TYPE prod = 0;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    
     for (size_t i = 0; i < mat1.cols; i++) {
-        prod += MATI(mat1, 0, i) * MATI(mat2, i, 0);
+        prod += m1p[i] * m2p[i];
     }
     return prod;
 }
@@ -103,7 +149,7 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     for (size_t i = 0; i < dst.rows; i++) {
         MAT_TYPE* drp = dp + i * dst.stride;
         for (size_t k = 0; k < mat1.cols; k++) {
-            MAT_TYPE t = m1p[k + mat1.stride * i];
+            const MAT_TYPE t = m1p[k + mat1.stride * i];
             const MAT_TYPE* m2rp = m2p + k * mat2.stride;
             for (size_t j = 0; j < dst.cols; j++) {
                 drp[j] += t * m2rp[j];
@@ -113,12 +159,16 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-// basically 'clone' (deep copy), which is a relatively time-consuming step
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict sp = src.p;
+    
     for (size_t i = 0; i < dst.rows; i++) {
+        MAT_TYPE* restrict drp = dp + i * dst.stride;
+        const MAT_TYPE* restrict srp = sp + i * src.stride;
         for (size_t j = 0; j < dst.cols; j++) {
-            MATI(dst, i, j) = MATI(src, i, j);
+            drp[j] = srp[j];
         }
     }
     return;

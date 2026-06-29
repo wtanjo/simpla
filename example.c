@@ -6,14 +6,9 @@
 #define N ((int)2e3)
 
 int main(void) {
-    sm bigm1 = mat_malloc(N, N);
-    sm bigm2 = mat_malloc(N, N);
-    sm prod = mat_malloc(N, N);
-    mat_rand(bigm1, 0, 1);
-    mat_rand(bigm2, 0, 1);
-    mat_dot(prod, bigm1, bigm2);
-    mat_free(bigm1);
-    mat_free(bigm2);
-    mat_free(prod);
+    sm A = mat_from((float[]){2,3,1,5,4,5,7,3,6}, 3, 3);
+    mat_print(A);
+    mat_eye(SLICE(A, 1, 2, 1, 2));
+    mat_print(A);
     return 0;
 }

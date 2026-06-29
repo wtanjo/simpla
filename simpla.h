@@ -31,12 +31,12 @@ typedef struct {
                                                  .rows = (rowe) - (rowb) + 1, \
                                                  .cols = (cole) - (colb) + 1, \
                                                  .stride = (mat).cols})
-#define mat_fill(mat, e) memset((mat).p, (e), sizeof(MAT_TYPE) * (mat).rows * (mat).cols)
 
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
 sm mat_malloc(size_t rows, size_t cols);
 void mat_free(sm mat);
 void mat_print(sm mat);
+void mat_fill(sm mat, MAT_TYPE e);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
 void mat_add(sm dst, sm mat1, sm mat2);
