@@ -32,5 +32,6 @@ void mat_add(sm dst, sm mat1, sm mat2);
 void mat_minus(sm dst, sm mat1, sm mat2);
 MAT_TYPE vec_dot(sm mat1, sm mat2);
 void mat_dot(sm dst, sm mat1, sm mat2);
+void mat_assign(sm dst, sm src);
 
 #endif // SIMPLA_H_

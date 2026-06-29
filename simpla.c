@@ -116,3 +116,14 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     }
     return;
 }
+
+// basically 'clone' (deep copy), which is a relatively time-consuming step
+void mat_assign(sm dst, sm src) {
+    assert(dst.rows == src.rows && dst.cols == src.cols);
+    for (size_t i = 0; i < dst.rows; i++) {
+        for (size_t j = 0; j < dst.cols; j++) {
+            MATI(dst, i, j) = MATI(src, i, j);
+        }
+    }
+    return;
+}

@@ -3,31 +3,24 @@ CFLAGS ?= -Wall -Wextra
 DFLAGS ?= -fPIC -shared
 SFLAGS ?= -c
 RFLAGS ?= -O3
-EGLIBS ?= -L./lib -lsimpla
+EGFLAGS ?= -I./include -L./lib -lsimpla
 
 PREFIX ?= /usr/local
 
 all: lib include
 
-lib: libsimpla.so simpla.o libsimpla.a
+lib: simpla.c
 	mkdir -p lib
-	mv libsimpla.so simpla.o libsimpla.a lib
+	$(CC) $(CFLAGS) $(DFLAGS) -o lib/libsimpla.so simpla.c
+	$(CC) $(CFLAGS) $(SFLAGS) -o lib/simpla.o simpla.c
+	ar rcs lib/libsimpla.a lib/simpla.o
 
 include: simpla.h
 	mkdir -p include
 	cp simpla.h include/
 
-libsimpla.so: simpla.c
-	$(CC) $(CFLAGS) $(DFLAGS) -o libsimpla.so simpla.c
-
-simpla.o: simpla.c
-	$(CC) $(CFLAGS) $(SFLAGS) -o simpla.o simpla.c
-
-libsimpla.a: simpla.o
-	ar rcs libsimpla.a simpla.o
-
-example: example.c simpla.h all
-	$(CC) $(CFLAGS) -o example example.c $(EGLIBS)
+example: example.c lib include
+	$(CC) $(CFLAGS) -o example example.c $(EGFLAGS)
 
 runeg: example
 	export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH && ./example
