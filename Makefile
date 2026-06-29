@@ -40,6 +40,7 @@ release: simpla.c simpla.h
 
 
 install: lib include
+	install -d $(PREFIX)/include/simpla/
 	install -Dm644 lib/* $(PREFIX)/lib/
 	install -Dm644 include/* $(PREFIX)/include/simpla/
 
