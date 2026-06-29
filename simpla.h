@@ -30,7 +30,7 @@ typedef struct {
 #define SLICE(mat, rowb, rowe, colb, cole) ((sm){.p = &(MATI((mat), (rowb), (colb))), \
                                                  .rows = (rowe) - (rowb) + 1, \
                                                  .cols = (cole) - (colb) + 1, \
-                                                 .stride = (mat).cols})
+                                                 .stride = (mat).stride})
 // #mat: stringify
 #define MAT_PRINT(mat) mat_print(mat, #mat)
 
