@@ -29,16 +29,17 @@ void mat_free(sm mat) {
     return;
 }
 
-void mat_print(sm mat) {
+void mat_print(sm mat, const char* name) {
     MAT_TYPE* mp = mat.p;
+    printf("%s = [\n", name);
     for (size_t i = 0; i < mat.rows; i++) {
         MAT_TYPE* mrp = mp + i * mat.stride;
         for (size_t j = 0; j < mat.cols; j++) {
-            printf("%f ", mrp[j]);
+            printf("%12.4f", mrp[j]);
         }
         printf("\n");
     }
-    printf("\n");
+    printf("]\n");
     return;
 }
 
