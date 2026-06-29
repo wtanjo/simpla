@@ -11,6 +11,7 @@ typedef struct {
     MAT_TYPE* p;
     size_t rows; // number of rows
     size_t cols; // number of columns
+    size_t stride; // specifically for slicing
 } sm;
 
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
@@ -22,6 +23,7 @@ void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
 void mat_add(sm dst, sm mat1, sm mat2);
 void mat_minus(sm dst, sm mat1, sm mat2);
+MAT_TYPE vec_dot(sm mat1, sm mat2);
 void mat_dot(sm dst, sm mat1, sm mat2);
 
 #endif // SIMPLA_H_
