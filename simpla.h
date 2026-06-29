@@ -2,10 +2,21 @@
 #define SIMPLA_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifndef MAT_TYPE
 #define MAT_TYPE float
 #endif // MAT_TYPE
+
+static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
+static inline uint64_t xorshift64(void) {
+    uint64_t x = rng_state;
+    x ^= x << 13;
+    x ^= x >> 7;
+    x ^= x << 17;
+    rng_state = x;
+    return rng_state;
+}
 
 typedef struct {
     MAT_TYPE* p;

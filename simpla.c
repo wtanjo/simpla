@@ -4,10 +4,6 @@
 #include <string.h>
 #include "simpla.h"
 
-MAT_TYPE rand_MAT_TYPE() {
-    return (MAT_TYPE)rand() / (MAT_TYPE)RAND_MAX;
-}
-
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
     return (sm) {
         .p = array,
@@ -49,7 +45,7 @@ void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
     assert(u > l);
     for (size_t i = 0; i < mat.rows; i++) {
         for (size_t j = 0; j < mat.cols; j++) {
-            MATI(mat, i, j) = rand_MAT_TYPE() * (u - l) + l;
+            MATI(mat, i, j) = (MAT_TYPE)xorshift64() / (MAT_TYPE)UINT64_MAX * (u - l) + l;
         }
     }
     return;
