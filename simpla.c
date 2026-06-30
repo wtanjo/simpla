@@ -4,6 +4,10 @@
 #include <string.h>
 #include "simpla.h"
 
+#ifdef ENABLE_OPENBLAS
+#include <openblas/cblas.h>
+#endif
+
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
     return (sm) {
         .p = array,
@@ -14,7 +18,7 @@ sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
 }
 
 sm mat_malloc(size_t rows, size_t cols) {
-    MAT_TYPE* array = (MAT_TYPE*)malloc(sizeof(MAT_TYPE) * rows * cols);
+    MAT_TYPE* array = (MAT_TYPE*)aligned_alloc(64, sizeof(MAT_TYPE) * rows * cols);
     assert(array != NULL);
     return (sm) {
         .p = array,
@@ -158,6 +162,7 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
         for (size_t k = 0; k < mat1.cols; k++) {
             const MAT_TYPE t = m1p[k + mat1.stride * i];
             const MAT_TYPE* m2rp = m2p + k * mat2.stride;
+            #pragma omp simd
             for (size_t j = 0; j < dst.cols; j++) {
                 drp[j] += t * m2rp[j];
             }
@@ -166,17 +171,41 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-// matrix multiplication accelerated using blocking and openmp parallel
-void mat_dot_fast(sm dst, sm mat1, sm mat2) {
+// large-scale matrix multiplication accelerated with blocking
+#define BLK (64)
+
+void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
+    size_t M = dst.rows;
+    size_t N = dst.cols;
+    size_t K = mat1.cols;
     memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
 
-    #pragma omp parallel for
-    for () {
-        
+    #pragma omp parallel for collapse(2)
+    for (size_t rb = 0; rb < M; rb += BLK) {
+        for (size_t cb = 0; cb < N; cb += BLK) {
+            for (size_t kb = 0; kb < K; kb += BLK) {
+                // i-k-j loop for this block
+                size_t i_max = (rb + BLK > M) ? M : (rb + BLK);
+                size_t k_max = (kb + BLK > K) ? K : (kb + BLK);
+                size_t j_max = (cb + BLK > N) ? N : (cb + BLK);
+                
+                for (size_t i = rb; i < i_max; i++) {
+                    MAT_TYPE* drp = dp + i * dst.stride;
+                    for (size_t k = kb; k < k_max; k++) {
+                        const MAT_TYPE t = m1p[k + mat1.stride * i];
+                        const MAT_TYPE* m2rp = m2p + k * mat2.stride;
+                        #pragma omp simd
+                        for (size_t j = cb; j < j_max; j++) {
+                            drp[j] += t * m2rp[j];
+                        }
+                    }
+                }
+            }
+        }
     }
     return;
 }

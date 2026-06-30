@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #ifndef MAT_TYPE
-#define MAT_TYPE (float)
+#define MAT_TYPE float
 #endif // MAT_TYPE
 
 static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
