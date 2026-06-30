@@ -4,10 +4,6 @@
 #include <string.h>
 #include "simpla.h"
 
-#ifdef ENABLE_OPENBLAS
-#include <openblas/cblas.h>
-#endif
-
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
     return (sm) {
         .p = array,
