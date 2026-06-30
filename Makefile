@@ -30,13 +30,19 @@ clean:
 	@if [ -d include ]; then rm -rf include; fi
 	@if [ -f example ]; then rm example; fi
 
-install: lib include
+install: lib include man
 	install -d $(PREFIX)/include/simpla/
 	install -Dm644 lib/* $(PREFIX)/lib/
 	install -Dm644 include/* $(PREFIX)/include/simpla/
+	install -d $(PREFIX)/share/man/man3/
+	install -D man3/* $(PREFIX)/share/man/man3/
 
 uninstall:
 	rm $(PREFIX)/lib/libsimpla.a $(PREFIX)/lib/libsimpla.so $(PREFIX)/lib/simpla.o
 	rm -rf $(PREFIX)/include/simpla
 
-.PHONY: all clean runeg release install uninstall
+man: simpla.3.scd
+	mkdir -p man3
+	scdoc < simpla.3.scd > man3/simpla.3
+
+.PHONY: all clean runeg release install uninstall man

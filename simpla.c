@@ -13,7 +13,7 @@ sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
     };
 }
 
-sm mat_malloc(size_t rows, size_t cols) {
+sm mat_alloc(size_t rows, size_t cols) {
     MAT_TYPE* array = (MAT_TYPE*)aligned_alloc(64, sizeof(MAT_TYPE) * rows * cols);
     assert(array != NULL);
     return (sm) {

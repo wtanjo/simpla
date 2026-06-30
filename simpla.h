@@ -35,7 +35,7 @@ typedef struct {
 #define MAT_PRINT(mat) mat_print(mat, #mat)
 
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
-sm mat_malloc(size_t rows, size_t cols);
+sm mat_alloc(size_t rows, size_t cols);
 void mat_free(sm mat);
 void mat_print(sm mat, const char* name);
 void mat_fill(sm mat, MAT_TYPE e);

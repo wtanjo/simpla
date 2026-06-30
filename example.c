@@ -6,9 +6,9 @@
 #define N ((int)1e4)
 
 int main(void) {
-    sm bigm1 = mat_malloc(N, N);
-    sm bigm2 = mat_malloc(N, N);
-    sm prod = mat_malloc(N, N);
+    sm bigm1 = mat_alloc(N, N);
+    sm bigm2 = mat_alloc(N, N);
+    sm prod = mat_alloc(N, N);
     mat_rand(bigm1, 0, 1);
     mat_rand(bigm2, 0, 1);
     mat_dot(prod, bigm1, bigm2);
