@@ -59,6 +59,11 @@ void mat_fill(sm mat, MAT_TYPE e) {
     return;
 }
 
+void mat_srand(uint64_t seed) {
+    rng_state = seed;
+    return;
+}
+
 // randomize mat with (pseudo) random values between lower bound l and upper bound u
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
     assert(u > l);
@@ -138,6 +143,7 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
     return prod;
 }
 
+// plain matrix multiplication with moderate acceleration with openmp parallel
 // try to avoid using macros in time-consuming part
 void mat_dot(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
@@ -156,6 +162,21 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
                 drp[j] += t * m2rp[j];
             }
         }
+    }
+    return;
+}
+
+// matrix multiplication accelerated using blocking and openmp parallel
+void mat_dot_fast(sm dst, sm mat1, sm mat2) {
+    assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
+
+    #pragma omp parallel for
+    for () {
+        
     }
     return;
 }

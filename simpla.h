@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #ifndef MAT_TYPE
-#define MAT_TYPE float
+#define MAT_TYPE (float)
 #endif // MAT_TYPE
 
 static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
@@ -39,12 +39,14 @@ sm mat_malloc(size_t rows, size_t cols);
 void mat_free(sm mat);
 void mat_print(sm mat, const char* name);
 void mat_fill(sm mat, MAT_TYPE e);
+void mat_srand(uint64_t seed);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
 void mat_add(sm dst, sm mat1, sm mat2);
 void mat_minus(sm dst, sm mat1, sm mat2);
 MAT_TYPE vec_dot(sm mat1, sm mat2);
 void mat_dot(sm dst, sm mat1, sm mat2);
+void mat_dot_fast(sm dst, sm mat1, sm mat2);
 void mat_assign(sm dst, sm src);
 
 #endif // SIMPLA_H_
