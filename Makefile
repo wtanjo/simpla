@@ -7,7 +7,7 @@ EGLIBS ?= -I./include -L./lib -lsimpla
 
 PREFIX ?= /usr/local
 
-all: lib include
+all: lib include man
 
 lib: simpla.c
 	mkdir -p lib
@@ -29,17 +29,19 @@ clean:
 	@if [ -d lib ]; then rm -rf lib; fi
 	@if [ -d include ]; then rm -rf include; fi
 	@if [ -f example ]; then rm example; fi
+	@if [ -f man3 ]; then rm -rf man3; fi
 
 install: lib include man
 	install -d $(PREFIX)/include/simpla/
-	install -Dm644 lib/* $(PREFIX)/lib/
-	install -Dm644 include/* $(PREFIX)/include/simpla/
+	install -Dm644 lib/simpla.o lib/libsimpla.a lib/libsimpla.so $(PREFIX)/lib/
+	install -Dm644 include/simpla.h $(PREFIX)/include/simpla/
 	install -d $(PREFIX)/share/man/man3/
-	install -D man3/* $(PREFIX)/share/man/man3/
+	install -D man3/simpla.3 $(PREFIX)/share/man/man3/
 
 uninstall:
 	rm $(PREFIX)/lib/libsimpla.a $(PREFIX)/lib/libsimpla.so $(PREFIX)/lib/simpla.o
 	rm -rf $(PREFIX)/include/simpla
+	rm -rf $(PREFIX)/share/man/man3/simpla.3
 
 man: simpla.3.scd
 	mkdir -p man3

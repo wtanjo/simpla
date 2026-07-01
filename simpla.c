@@ -167,7 +167,7 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-// large-scale matrix multiplication accelerated with blocking
+// large-scale matrix multiplication accelerated with blocking and memory packing
 #define BLK (64)
 
 void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
@@ -184,7 +184,7 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     for (size_t rb = 0; rb < M; rb += BLK) {
         for (size_t cb = 0; cb < N; cb += BLK) {
             for (size_t kb = 0; kb < K; kb += BLK) {
-                // i-k-j loop for this block
+                // i-k-j loop for the current two blocks
                 size_t i_max = (rb + BLK > M) ? M : (rb + BLK);
                 size_t k_max = (kb + BLK > K) ? K : (kb + BLK);
                 size_t j_max = (cb + BLK > N) ? N : (cb + BLK);
