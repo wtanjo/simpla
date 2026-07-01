@@ -7,6 +7,7 @@ The major goal and principle is that it should provide simple interfaces to line
 ## Usage
 
 ## Prerequisites
+- gcc
 - scdoc (for building manpage, see below)
 
 Clone this repo and do `make` to make the libraries. Do `(sudo) make install` if you want easy access to this library. You can modified [Makefile](./Makefile) according to your specific needs.

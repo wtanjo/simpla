@@ -167,8 +167,8 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-// large-scale matrix multiplication accelerated with blocking and memory packing
-#define BLK (64)
+// large-scale matrix multiplication accelerated with blocking and loop expansion
+#define BLK (128)
 
 void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
@@ -180,22 +180,60 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     size_t K = mat1.cols;
     memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
 
-    #pragma omp parallel for collapse(2)
-    for (size_t rb = 0; rb < M; rb += BLK) {
-        for (size_t cb = 0; cb < N; cb += BLK) {
+    #pragma omp parallel for collapse(2) schedule(dynamic, 1)
+    for (size_t ib = 0; ib < M; ib += BLK) {
+        for (size_t jb = 0; jb < N; jb += BLK) {
             for (size_t kb = 0; kb < K; kb += BLK) {
                 // i-k-j loop for the current two blocks
-                size_t i_max = (rb + BLK > M) ? M : (rb + BLK);
+                size_t i_max = (ib + BLK > M) ? M : (ib + BLK);
                 size_t k_max = (kb + BLK > K) ? K : (kb + BLK);
-                size_t j_max = (cb + BLK > N) ? N : (cb + BLK);
-                
-                for (size_t i = rb; i < i_max; i++) {
+                size_t j_max = (jb + BLK > N) ? N : (jb + BLK);
+
+                size_t i = ib;
+                for (; i + 8 - 1 < i_max; i += 8) {
+                    MAT_TYPE* drp0 = dp + (i + 0) * dst.stride;
+                    MAT_TYPE* drp1 = dp + (i + 1) * dst.stride;
+                    MAT_TYPE* drp2 = dp + (i + 2) * dst.stride;
+                    MAT_TYPE* drp3 = dp + (i + 3) * dst.stride;
+                    MAT_TYPE* drp4 = dp + (i + 4) * dst.stride;
+                    MAT_TYPE* drp5 = dp + (i + 5) * dst.stride;
+                    MAT_TYPE* drp6 = dp + (i + 6) * dst.stride;
+                    MAT_TYPE* drp7 = dp + (i + 7) * dst.stride;
+                    
+                    for (size_t k = kb; k < k_max; k++) {
+                        const MAT_TYPE t0 = m1p[k + mat1.stride * (i + 0)];
+                        const MAT_TYPE t1 = m1p[k + mat1.stride * (i + 1)];
+                        const MAT_TYPE t2 = m1p[k + mat1.stride * (i + 2)];
+                        const MAT_TYPE t3 = m1p[k + mat1.stride * (i + 3)];
+                        const MAT_TYPE t4 = m1p[k + mat1.stride * (i + 4)];
+                        const MAT_TYPE t5 = m1p[k + mat1.stride * (i + 5)];
+                        const MAT_TYPE t6 = m1p[k + mat1.stride * (i + 6)];
+                        const MAT_TYPE t7 = m1p[k + mat1.stride * (i + 7)];
+                        const MAT_TYPE* m2rp = m2p + k * mat2.stride;
+                        
+                        #pragma omp simd
+                        for (size_t j = jb; j < j_max; j++) {
+                            const size_t m2rpj = m2rp[j];
+                            drp0[j] += t0 * m2rpj;
+                            drp1[j] += t1 * m2rpj;
+                            drp2[j] += t2 * m2rpj;
+                            drp3[j] += t3 * m2rpj;
+                            drp4[j] += t4 * m2rpj;
+                            drp5[j] += t5 * m2rpj;
+                            drp6[j] += t6 * m2rpj;
+                            drp7[j] += t7 * m2rpj;
+                        }
+                    }
+                }
+
+                for (; i < i_max; i++) {
                     MAT_TYPE* drp = dp + i * dst.stride;
                     for (size_t k = kb; k < k_max; k++) {
                         const MAT_TYPE t = m1p[k + mat1.stride * i];
                         const MAT_TYPE* m2rp = m2p + k * mat2.stride;
+                        
                         #pragma omp simd
-                        for (size_t j = cb; j < j_max; j++) {
+                        for (size_t j = jb; j < j_max; j++) {
                             drp[j] += t * m2rp[j];
                         }
                     }
@@ -205,6 +243,7 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     }
     return;
 }
+
 
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);

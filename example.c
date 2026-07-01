@@ -11,7 +11,7 @@ int main(void) {
     sm prod = mat_alloc(N, N);
     mat_rand(bigm1, 0, 1);
     mat_rand(bigm2, 0, 1);
-    mat_dot(prod, bigm1, bigm2);
+    mat_dot_blocked(prod, bigm1, bigm2);
 
     mat_free(bigm1);
     mat_free(bigm2);

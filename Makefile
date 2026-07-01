@@ -1,4 +1,4 @@
-CC ?= gcc
+CC = gcc
 CFLAGS ?= -Wall -Wextra -ffast-math -fopenmp -O3 -march=native
 LIBS ?=
 DFLAGS ?= -fPIC -shared
@@ -19,17 +19,17 @@ include: simpla.h
 	mkdir -p include
 	cp simpla.h include/
 
-example: example.c lib include
-	$(CC) $(CFLAGS) -o example example.c $(EGLIBS)
+example: example.c
+	$(CC) -o example example.c $(EGLIBS)
 
 runeg: example
-	export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH && ./example
+	export LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH} && ./example
 
 clean:
 	@if [ -d lib ]; then rm -rf lib; fi
 	@if [ -d include ]; then rm -rf include; fi
 	@if [ -f example ]; then rm example; fi
-	@if [ -f man3 ]; then rm -rf man3; fi
+	@if [ -d man3 ]; then rm -rf man3; fi
 
 install: lib include man
 	install -d $(PREFIX)/include/simpla/
