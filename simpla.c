@@ -207,17 +207,6 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-void mat_dot_transpose1(sm dst, sm mat1, sm mat2) {
-    // dst = mat1^T * mat2
-    
-    return;
-}
-void mat_dot_transpose2(sm dst, sm mat1, sm mat2) {
-    // dst = mat1 * mat2^T
-    
-    return;
-}
-
 // large-scale matrix multiplication accelerated with blocking and loop expansion
 #define BLK (128)
 
@@ -295,18 +284,6 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     return;
 }
 
-void mat_dot_blocked_transpose1(sm dst, sm mat1, sm mat2) {
-    // dst = mat1^T * mat2
-    
-    return;
-}
-
-void mat_dot_blocked_transpose2(sm dst, sm mat1, sm mat2) {
-    // dst = mat1 * mat2^T
-    
-    return;
-}
-
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
     MAT_TYPE* restrict dp = dst.p;
@@ -326,7 +303,7 @@ MAT_TYPE mat_det(sm mat) {
     assert(mat.rows == mat.cols);
     // LU decomposition
     
-    return det;
+    return 0;
 }
 
 void linsys_lu(sm x, sm A, sm b) {

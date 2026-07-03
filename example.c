@@ -3,7 +3,7 @@
 
 #define MAT_TYPE float
 
-#define N ((int)1e4)
+#define N ((int)2e3)
 
 int main(void) {
     sm bigm1 = mat_alloc(N, N);
@@ -11,7 +11,10 @@ int main(void) {
     sm prod = mat_alloc(N, N);
     mat_rand(bigm1, 0, 1);
     mat_rand(bigm2, 0, 1);
-    mat_dot_blocked(prod, bigm1, bigm2);
+    mat_dot(prod, bigm1, bigm2);
+    printf("1\n");
+    mat_dot_transpose2(prod, bigm1, bigm2);
+    printf("2\n");
 
     mat_free(bigm1);
     mat_free(bigm2);

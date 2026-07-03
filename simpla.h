@@ -49,11 +49,7 @@ void mat_addn(sm dst, sm mat, MAT_TYPE a);
 void mat_dotn(sm dst, sm mat, MAT_TYPE a);
 MAT_TYPE vec_dot(sm mat1, sm mat2);
 void mat_dot(sm dst, sm mat1, sm mat2);
-void mat_dot_transpose1(sm dst, sm mat1, sm mat2);
-void mat_dot_transpose2(sm dst, sm mat1, sm mat2);
 void mat_dot_blocked(sm dst, sm mat1, sm mat2);
-void mat_dot_blocked_transpose1(sm dst, sm mat1, sm mat2);
-void mat_dot_blocked_transpose2(sm dst, sm mat1, sm mat2);
 void mat_assign(sm dst, sm src);
 MAT_TYPE mat_det(sm mat);
 
