@@ -42,11 +42,22 @@ void mat_fill(sm mat, MAT_TYPE e);
 void mat_srand(uint64_t seed);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
+void mat_transpose(sm dst, sm mat);
 void mat_add(sm dst, sm mat1, sm mat2);
 void mat_minus(sm dst, sm mat1, sm mat2);
+void mat_addn(sm dst, sm mat, MAT_TYPE a);
+void mat_dotn(sm dst, sm mat, MAT_TYPE a);
 MAT_TYPE vec_dot(sm mat1, sm mat2);
 void mat_dot(sm dst, sm mat1, sm mat2);
+void mat_dot_transpose1(sm dst, sm mat1, sm mat2);
+void mat_dot_transpose2(sm dst, sm mat1, sm mat2);
 void mat_dot_blocked(sm dst, sm mat1, sm mat2);
+void mat_dot_blocked_transpose1(sm dst, sm mat1, sm mat2);
+void mat_dot_blocked_transpose2(sm dst, sm mat1, sm mat2);
 void mat_assign(sm dst, sm src);
+MAT_TYPE mat_det(sm mat);
+
+void linsys_lu(sm x, sm A, sm b);
+void linsys_qr(sm x, sm A, sm b);
 
 #endif // SIMPLA_H_

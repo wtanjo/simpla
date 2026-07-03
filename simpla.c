@@ -89,6 +89,12 @@ void mat_eye(sm mat) {
     return;
 }
 
+void mat_transpose(sm dst, sm mat) {
+    assert(dst.rows == mat.cols && dst.cols == mat.rows);
+    
+    return;
+}
+
 void mat_add(sm dst,sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
@@ -131,6 +137,40 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
     return;
 }
 
+void mat_addn(sm dst, sm mat, MAT_TYPE a) {
+    assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict mp = mat.p;
+    MAT_TYPE* restrict drp;
+    const MAT_TYPE* restrict mrp;
+
+    for (size_t i = 0; i < dst.rows; i++) {
+        drp = dp + i * dst.stride;
+        mrp = mp + i * mat.stride;
+        for (size_t j = 0; j < dst.cols; j++) {
+            drp[j] = mrp[j] + a;
+        }
+    }
+    return;
+}
+
+void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
+    assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict mp = mat.p;
+    MAT_TYPE* restrict drp;
+    const MAT_TYPE* restrict mrp;
+
+    for (size_t i = 0; i < dst.rows; i++) {
+        drp = dp + i * dst.stride;
+        mrp = mp + i * mat.stride;
+        for (size_t j = 0; j < dst.cols; j++) {
+            drp[j] = mrp[j] * a;
+        }
+    }
+    return;
+}
+
 MAT_TYPE vec_dot(sm mat1, sm mat2) {
     assert(mat1.rows == 1 && mat2.cols == 1 && mat1.cols == mat2.rows);
     MAT_TYPE prod = 0;
@@ -164,6 +204,17 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
             }
         }
     }
+    return;
+}
+
+void mat_dot_transpose1(sm dst, sm mat1, sm mat2) {
+    // dst = mat1^T * mat2
+    
+    return;
+}
+void mat_dot_transpose2(sm dst, sm mat1, sm mat2) {
+    // dst = mat1 * mat2^T
+    
     return;
 }
 
@@ -244,6 +295,17 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     return;
 }
 
+void mat_dot_blocked_transpose1(sm dst, sm mat1, sm mat2) {
+    // dst = mat1^T * mat2
+    
+    return;
+}
+
+void mat_dot_blocked_transpose2(sm dst, sm mat1, sm mat2) {
+    // dst = mat1 * mat2^T
+    
+    return;
+}
 
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
@@ -257,5 +319,24 @@ void mat_assign(sm dst, sm src) {
             drp[j] = srp[j];
         }
     }
+    return;
+}
+
+MAT_TYPE mat_det(sm mat) {
+    assert(mat.rows == mat.cols);
+    // LU decomposition
+    
+    return det;
+}
+
+void linsys_lu(sm x, sm A, sm b) {
+    assert(x.cols == 1 && b.cols == 1 && A.cols == b.rows && A.rows == x.rows);
+    
+    return;
+}
+
+void linsys_qr(sm x, sm A, sm b) {
+    assert(x.cols == 1 && b.cols == 1 && A.cols == b.rows && A.rows == x.rows);
+    
     return;
 }
