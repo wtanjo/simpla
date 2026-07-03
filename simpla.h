@@ -43,6 +43,7 @@ void mat_srand(uint64_t seed);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
 void mat_transpose(sm dst, sm mat);
+void mat_transpose_blocked(sm dst, sm mat);
 void mat_add(sm dst, sm mat1, sm mat2);
 void mat_minus(sm dst, sm mat1, sm mat2);
 void mat_addn(sm dst, sm mat, MAT_TYPE a);

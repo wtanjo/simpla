@@ -4,6 +4,8 @@
 #include <string.h>
 #include "simpla.h"
 
+#define BLK (128)
+
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols) {
     return (sm) {
         .p = array,
@@ -91,13 +93,50 @@ void mat_eye(sm mat) {
 
 void mat_transpose(sm dst, sm mat) {
     assert(dst.rows == mat.cols && dst.cols == mat.rows);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict mp = mat.p;
     
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        const MAT_TYPE* mrp = mp + i * mat.stride;
+        for (size_t j = 0; j < N; j++) {
+            dp[i + j * dst.stride] = mrp[j];
+        }
+    }
+    return;
+}
+
+void mat_transpose_blocked(sm dst, sm mat) {
+    assert(dst.rows == mat.cols && dst.cols == mat.rows);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict mp = mat.p;
+    
+    #pragma omp parallel for collapse(2)
+    for (size_t ib = 0; ib < M; ib += BLK) {
+        for (size_t jb = 0; jb < N; jb += BLK) {
+            size_t i_max = (ib + BLK > M) ? M : (ib + BLK);
+            size_t j_max = (jb + BLK > N) ? N : (jb + BLK);
+
+            for (size_t i = ib; i < i_max; i++) {
+                const MAT_TYPE* mrp = mp + i * mat.stride;
+                for (size_t j = jb; j < j_max; j++) {
+                    dp[i + j * dst.stride] = mrp[j];
+                }
+            }
+        }
+    }
     return;
 }
 
 void mat_add(sm dst,sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
@@ -105,11 +144,12 @@ void mat_add(sm dst,sm mat1, sm mat2) {
     const MAT_TYPE* restrict m1rp;
     const MAT_TYPE* restrict m2rp;
 
-    for (size_t i = 0; i < dst.rows; i++) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
         drp = dp + i * dst.stride;
         m1rp = m1p + i * mat1.stride;
         m2rp = m2p + i * mat2.stride;
-        for (size_t j = 0; j < dst.cols; j++) {
+        for (size_t j = 0; j < N; j++) {
             drp[j] = m1rp[j] + m2rp[j];
         }
     }
@@ -119,6 +159,8 @@ void mat_add(sm dst,sm mat1, sm mat2) {
 void mat_minus(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
@@ -126,11 +168,12 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
     const MAT_TYPE* restrict m1rp;
     const MAT_TYPE* restrict m2rp;
 
-    for (size_t i = 0; i < dst.rows; i++) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
         drp = dp + i * dst.stride;
         m1rp = m1p + i * mat1.stride;
         m2rp = m2p + i * mat2.stride;
-        for (size_t j = 0; j < dst.cols; j++) {
+        for (size_t j = 0; j < N; j++) {
             drp[j] = m1rp[j] - m2rp[j];
         }
     }
@@ -139,15 +182,18 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
 
 void mat_addn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict mp = mat.p;
     MAT_TYPE* restrict drp;
     const MAT_TYPE* restrict mrp;
 
-    for (size_t i = 0; i < dst.rows; i++) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
         drp = dp + i * dst.stride;
         mrp = mp + i * mat.stride;
-        for (size_t j = 0; j < dst.cols; j++) {
+        for (size_t j = 0; j < N; j++) {
             drp[j] = mrp[j] + a;
         }
     }
@@ -156,15 +202,18 @@ void mat_addn(sm dst, sm mat, MAT_TYPE a) {
 
 void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict mp = mat.p;
     MAT_TYPE* restrict drp;
     const MAT_TYPE* restrict mrp;
 
-    for (size_t i = 0; i < dst.rows; i++) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
         drp = dp + i * dst.stride;
         mrp = mp + i * mat.stride;
-        for (size_t j = 0; j < dst.cols; j++) {
+        for (size_t j = 0; j < N; j++) {
             drp[j] = mrp[j] * a;
         }
     }
@@ -173,11 +222,13 @@ void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
 
 MAT_TYPE vec_dot(sm mat1, sm mat2) {
     assert(mat1.rows == 1 && mat2.cols == 1 && mat1.cols == mat2.rows);
+    const size_t N = mat1.cols;
     MAT_TYPE prod = 0;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
     
-    for (size_t i = 0; i < mat1.cols; i++) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < N; i++) {
         prod += m1p[i] * m2p[i];
     }
     return prod;
@@ -187,19 +238,22 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
 // try to avoid using macros in time-consuming part
 void mat_dot(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    const size_t K = mat1.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
     memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
 
     #pragma omp parallel for
-    for (size_t i = 0; i < dst.rows; i++) {
+    for (size_t i = 0; i < M; i++) {
         MAT_TYPE* drp = dp + i * dst.stride;
-        for (size_t k = 0; k < mat1.cols; k++) {
+        for (size_t k = 0; k < K; k++) {
             const MAT_TYPE t = m1p[k + mat1.stride * i];
             const MAT_TYPE* m2rp = m2p + k * mat2.stride;
             #pragma omp simd
-            for (size_t j = 0; j < dst.cols; j++) {
+            for (size_t j = 0; j < N; j++) {
                 drp[j] += t * m2rp[j];
             }
         }
@@ -208,8 +262,6 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
 }
 
 // large-scale matrix multiplication accelerated with blocking and loop expansion
-#define BLK (128)
-
 void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
     MAT_TYPE* restrict dp = dst.p;
@@ -286,13 +338,15 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
 
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict sp = src.p;
     
-    for (size_t i = 0; i < dst.rows; i++) {
+    for (size_t i = 0; i < M; i++) {
         MAT_TYPE* restrict drp = dp + i * dst.stride;
         const MAT_TYPE* restrict srp = sp + i * src.stride;
-        for (size_t j = 0; j < dst.cols; j++) {
+        for (size_t j = 0; j < N; j++) {
             drp[j] = srp[j];
         }
     }
