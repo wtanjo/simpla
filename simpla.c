@@ -32,11 +32,15 @@ void mat_free(sm mat) {
 }
 
 void mat_print(sm mat, const char* name) {
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
+    const size_t S = mat.stride;
     MAT_TYPE* mp = mat.p;
+    
     printf("%s = [\n", name);
-    for (size_t i = 0; i < mat.rows; i++) {
-        MAT_TYPE* mrp = mp + i * mat.stride;
-        for (size_t j = 0; j < mat.cols; j++) {
+    for (size_t i = 0; i < M; i++) {
+        MAT_TYPE* mrp = mp + i * S;
+        for (size_t j = 0; j < N; j++) {
             printf("%12.4f", mrp[j]);
         }
         printf("\n");
@@ -45,17 +49,37 @@ void mat_print(sm mat, const char* name) {
     return;
 }
 
-void mat_fill(sm mat, MAT_TYPE e) {
-    if (mat.cols == mat.stride) {
-        memset(mat.p, e, sizeof(MAT_TYPE) * mat.rows * mat.cols);
+void mat_clear(sm mat) {
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
+    const size_t S = mat.stride;
+    MAT_TYPE* mp = mat.p;
+    
+    if (N == S) {
+        memset(mp, 0, sizeof(MAT_TYPE) * M * N);
         return;
     } else {
-        MAT_TYPE* mp = mat.p;
-        for (size_t i = 0; i < mat.rows; i++) {
-            MAT_TYPE* mrp = mp + i * mat.stride;
-            for (size_t j = 0; j < mat.cols; j++) {
-                memset(mrp, e, sizeof(MAT_TYPE) * mat.cols);
+        for (size_t i = 0; i < M; i++) {
+            MAT_TYPE* mrp = mp + i * S;
+            for (size_t j = 0; j < N; j++) {
+                memset(mrp, 0, sizeof(MAT_TYPE) * N);
             }
+        }
+    }
+    return;
+}
+
+void mat_fill(sm mat, MAT_TYPE e) {
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
+    const size_t S = mat.stride;
+    MAT_TYPE* mp = mat.p;
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        MAT_TYPE* mrp = mp + i * S;
+        for (size_t j = 0; j < N; j++) {
+            mrp[j] = e;
         }
     }
     return;
@@ -69,11 +93,14 @@ void mat_srand(uint64_t seed) {
 // randomize mat with (pseudo) random values between lower bound l and upper bound u
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
     assert(u > l);
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
+    const size_t S = mat.stride;
     MAT_TYPE* mp = mat.p;
     
-    for (size_t i = 0; i < mat.rows; i++) {
-        MAT_TYPE* mrp = mp + i * mat.stride;
-        for (size_t j = 0; j < mat.cols; j++) {
+    for (size_t i = 0; i < M; i++) {
+        MAT_TYPE* mrp = mp + i * S;
+        for (size_t j = 0; j < N; j++) {
             mrp[j] = (MAT_TYPE)xorshift64() / (MAT_TYPE)UINT64_MAX * (u - l) + l;
         }
     }
@@ -82,10 +109,14 @@ void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u) {
 
 void mat_eye(sm mat) {
     assert(mat.rows == mat.cols);
-    mat_fill(mat, 0);
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
+    const size_t S = mat.stride;
     MAT_TYPE* mp = mat.p;
+    mat_clear(mat);
 
-    for (size_t i = 0; i < (mat.rows - 1) * mat.stride + mat.cols; i += mat.stride + 1) {
+    #pragma omp parallel for
+    for (size_t i = 0; i < (M - 1) * S + N; i += S + 1) {
         mp[i] = 1;
     }
     return;
@@ -93,8 +124,9 @@ void mat_eye(sm mat) {
 
 void mat_transpose(sm dst, sm mat) {
     assert(dst.rows == mat.cols && dst.cols == mat.rows);
-    const size_t M = dst.rows;
-    const size_t N = dst.cols;
+    assert(dst.p != mat.p);
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict mp = mat.p;
     
@@ -110,8 +142,9 @@ void mat_transpose(sm dst, sm mat) {
 
 void mat_transpose_blocked(sm dst, sm mat) {
     assert(dst.rows == mat.cols && dst.cols == mat.rows);
-    const size_t M = dst.rows;
-    const size_t N = dst.cols;
+    assert(dst.p != mat.p);
+    const size_t M = mat.rows;
+    const size_t N = mat.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict mp = mat.p;
     
@@ -132,9 +165,10 @@ void mat_transpose_blocked(sm dst, sm mat) {
     return;
 }
 
-void mat_add(sm dst,sm mat1, sm mat2) {
+void mat_add(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    assert(dst.p != mat1.p && dst.p != mat2.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
@@ -159,6 +193,7 @@ void mat_add(sm dst,sm mat1, sm mat2) {
 void mat_minus(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    assert(dst.p != mat1.p && dst.p != mat2.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
@@ -182,6 +217,7 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
 
 void mat_addn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    assert(dst.p != mat.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
@@ -202,6 +238,7 @@ void mat_addn(sm dst, sm mat, MAT_TYPE a) {
 
 void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
+    assert(dst.p != mat.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
@@ -224,10 +261,10 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
     assert(mat1.rows == 1 && mat2.cols == 1 && mat1.cols == mat2.rows);
     const size_t N = mat1.cols;
     MAT_TYPE prod = 0;
-    const MAT_TYPE* restrict m1p = mat1.p;
-    const MAT_TYPE* restrict m2p = mat2.p;
+    const MAT_TYPE* m1p = mat1.p;
+    const MAT_TYPE* m2p = mat2.p;
     
-    #pragma omp parallel for
+    #pragma omp parallel for reduction(+:prod)
     for (size_t i = 0; i < N; i++) {
         prod += m1p[i] * m2p[i];
     }
@@ -238,13 +275,14 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
 // try to avoid using macros in time-consuming part
 void mat_dot(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
+    assert(dst.p != mat1.p && dst.p != mat2.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     const size_t K = mat1.cols;
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
-    memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
+    mat_clear(dst);
 
     #pragma omp parallel for
     for (size_t i = 0; i < M; i++) {
@@ -264,13 +302,14 @@ void mat_dot(sm dst, sm mat1, sm mat2) {
 // large-scale matrix multiplication accelerated with blocking and loop expansion
 void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat2.cols && mat1.cols == mat2.rows);
+    assert(dst.p != mat1.p && dst.p != mat2.p);
     MAT_TYPE* restrict dp = dst.p;
     const MAT_TYPE* restrict m1p = mat1.p;
     const MAT_TYPE* restrict m2p = mat2.p;
     size_t M = dst.rows;
     size_t N = dst.cols;
     size_t K = mat1.cols;
-    memset(dp, 0, sizeof(MAT_TYPE) * dst.rows * dst.cols);
+    mat_clear(dst);
 
     #pragma omp parallel for collapse(2) schedule(dynamic, 1)
     for (size_t ib = 0; ib < M; ib += BLK) {
@@ -305,7 +344,7 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
                         
                         #pragma omp simd
                         for (size_t j = jb; j < j_max; j++) {
-                            const size_t m2rpj = m2rp[j];
+                            const MAT_TYPE m2rpj = m2rp[j];
                             drp0[j] += t0 * m2rpj;
                             drp1[j] += t1 * m2rpj;
                             drp2[j] += t2 * m2rpj;
@@ -338,6 +377,10 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
 
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
+    if (dst.p == src.p) {
+        return;
+    }
+    
     const size_t M = dst.rows;
     const size_t N = dst.cols;
     MAT_TYPE* restrict dp = dst.p;
@@ -355,7 +398,7 @@ void mat_assign(sm dst, sm src) {
 
 MAT_TYPE mat_det(sm mat) {
     assert(mat.rows == mat.cols);
-    // LU decomposition
+    // LU decomposition with pivoting
     
     return 0;
 }

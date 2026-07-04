@@ -38,6 +38,7 @@ sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
 sm mat_alloc(size_t rows, size_t cols);
 void mat_free(sm mat);
 void mat_print(sm mat, const char* name);
+void mat_clear(sm mat);
 void mat_fill(sm mat, MAT_TYPE e);
 void mat_srand(uint64_t seed);
 void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
