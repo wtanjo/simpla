@@ -165,18 +165,18 @@ void mat_transpose_blocked(sm dst, sm mat) {
     return;
 }
 
-void mat_add(sm dst, sm mat1, sm mat2) {
+// compute: dst = k1 * mat1 + k2 * mat2
+void mat_add(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2) {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
-    assert(dst.p != mat1.p && dst.p != mat2.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
-    MAT_TYPE* restrict dp = dst.p;
-    const MAT_TYPE* restrict m1p = mat1.p;
-    const MAT_TYPE* restrict m2p = mat2.p;
-    MAT_TYPE* restrict drp;
-    const MAT_TYPE* restrict m1rp;
-    const MAT_TYPE* restrict m2rp;
+    MAT_TYPE* dp = dst.p;
+    const MAT_TYPE* m1p = mat1.p;
+    const MAT_TYPE* m2p = mat2.p;
+    MAT_TYPE* drp;
+    const MAT_TYPE* m1rp;
+    const MAT_TYPE* m2rp;
 
     #pragma omp parallel for
     for (size_t i = 0; i < M; i++) {
@@ -184,32 +184,7 @@ void mat_add(sm dst, sm mat1, sm mat2) {
         m1rp = m1p + i * mat1.stride;
         m2rp = m2p + i * mat2.stride;
         for (size_t j = 0; j < N; j++) {
-            drp[j] = m1rp[j] + m2rp[j];
-        }
-    }
-    return;
-}
-
-void mat_minus(sm dst, sm mat1, sm mat2) {
-    assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
-    assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
-    assert(dst.p != mat1.p && dst.p != mat2.p);
-    const size_t M = dst.rows;
-    const size_t N = dst.cols;
-    MAT_TYPE* restrict dp = dst.p;
-    const MAT_TYPE* restrict m1p = mat1.p;
-    const MAT_TYPE* restrict m2p = mat2.p;
-    MAT_TYPE* restrict drp;
-    const MAT_TYPE* restrict m1rp;
-    const MAT_TYPE* restrict m2rp;
-
-    #pragma omp parallel for
-    for (size_t i = 0; i < M; i++) {
-        drp = dp + i * dst.stride;
-        m1rp = m1p + i * mat1.stride;
-        m2rp = m2p + i * mat2.stride;
-        for (size_t j = 0; j < N; j++) {
-            drp[j] = m1rp[j] - m2rp[j];
+            drp[j] = k1 * m1rp[j] + k2 * m2rp[j];
         }
     }
     return;
@@ -217,13 +192,12 @@ void mat_minus(sm dst, sm mat1, sm mat2) {
 
 void mat_addn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
-    assert(dst.p != mat.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
-    MAT_TYPE* restrict dp = dst.p;
-    const MAT_TYPE* restrict mp = mat.p;
-    MAT_TYPE* restrict drp;
-    const MAT_TYPE* restrict mrp;
+    MAT_TYPE* dp = dst.p;
+    const MAT_TYPE* mp = mat.p;
+    MAT_TYPE* drp;
+    const MAT_TYPE* mrp;
 
     #pragma omp parallel for
     for (size_t i = 0; i < M; i++) {
@@ -238,13 +212,12 @@ void mat_addn(sm dst, sm mat, MAT_TYPE a) {
 
 void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
     assert(dst.rows == mat.rows && dst.cols == mat.cols);
-    assert(dst.p != mat.p);
     const size_t M = dst.rows;
     const size_t N = dst.cols;
-    MAT_TYPE* restrict dp = dst.p;
-    const MAT_TYPE* restrict mp = mat.p;
-    MAT_TYPE* restrict drp;
-    const MAT_TYPE* restrict mrp;
+    MAT_TYPE* dp = dst.p;
+    const MAT_TYPE* mp = mat.p;
+    MAT_TYPE* drp;
+    const MAT_TYPE* mrp;
 
     #pragma omp parallel for
     for (size_t i = 0; i < M; i++) {
