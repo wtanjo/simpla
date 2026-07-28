@@ -122,6 +122,8 @@ void mat_eye(sm mat) {
     return;
 }
 
+// Be careful with this function, especially on slices, because the correct stride for dst can be confusing.
+// If possible, use the functions with suffix _lt or _rt which do operations with one of their operands transposed.
 void mat_transpose(sm dst, sm mat) {
     assert(dst.rows == mat.cols && dst.cols == mat.rows);
     assert(dst.p != mat.p);
@@ -160,6 +162,52 @@ void mat_transpose_blocked(sm dst, sm mat) {
                     dp[i + j * dst.stride] = mrp[j];
                 }
             }
+        }
+    }
+    return;
+}
+
+// compute: dst = k1 * mat1^T + k2 * mat2
+void mat_add_lt(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2) {
+    assert(dst.rows == mat1.cols && dst.cols == mat1.rows);
+    assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    MAT_TYPE* dp = dst.p;
+    const MAT_TYPE* m1p = mat1.p;
+    const MAT_TYPE* m2p = mat2.p;
+    MAT_TYPE* drp;
+    const MAT_TYPE* m2rp;
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        drp = dp + i * dst.stride;
+        m2rp = m2p + i * mat2.stride;
+        for (size_t j = 0; j < N; j++) {
+            drp[j] = k1 * m1p[i + j * mat1.stride] + k2 * m2rp[j];
+        }
+    }
+    return;
+}
+
+// compute: dst = k1 * mat1 + k2 * mat2^T
+void mat_add_rt(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2) {
+    assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
+    assert(dst.rows == mat2.cols && dst.cols == mat2.rows);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    MAT_TYPE* dp = dst.p;
+    const MAT_TYPE* m1p = mat1.p;
+    const MAT_TYPE* m2p = mat2.p;
+    MAT_TYPE* drp;
+    const MAT_TYPE* m1rp;
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        drp = dp + i * dst.stride;
+        m1rp = m1p + i * mat1.stride;
+        for (size_t j = 0; j < N; j++) {
+            drp[j] = k1 * m1rp[j] + k2 * m2p[i + j * mat2.stride];
         }
     }
     return;
@@ -231,8 +279,11 @@ void mat_dotn(sm dst, sm mat, MAT_TYPE a) {
 }
 
 MAT_TYPE vec_dot(sm mat1, sm mat2) {
-    assert(mat1.rows == 1 && mat2.cols == 1 && mat1.cols == mat2.rows);
-    const size_t N = mat1.cols;
+    assert(mat1.rows == 1 || mat1.cols ==1);
+    assert(mat2.rows == 1 || mat2.cols ==1);
+    const size_t N = mat1.cols == 1 ? mat1.rows : mat1.cols;
+    const size_t M = mat2.cols == 1 ? mat2.rows : mat2.cols;
+    assert(N == M);
     MAT_TYPE prod = 0;
     const MAT_TYPE* m1p = mat1.p;
     const MAT_TYPE* m2p = mat2.p;
@@ -242,6 +293,33 @@ MAT_TYPE vec_dot(sm mat1, sm mat2) {
         prod += m1p[i] * m2p[i];
     }
     return prod;
+}
+
+// compute: dst = mat1 * mat2^T, which is more cache-friendly
+void mat_dot_rt(sm dst, sm mat1, sm mat2) {
+    assert(dst.rows == mat1.rows && dst.cols == mat2.rows && mat1.cols == mat2.cols);
+    assert(dst.p != mat1.p && dst.p != mat2.p);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    const size_t K = mat1.cols;
+    MAT_TYPE* restrict dp = dst.p;
+    const MAT_TYPE* restrict m1p = mat1.p;
+    const MAT_TYPE* restrict m2p = mat2.p;
+    mat_clear(dst);
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        MAT_TYPE* drp = dp + i * dst.stride;
+        const MAT_TYPE* m1rp = m1p + i * mat1.stride;
+        for (size_t j = 0; j < N; j++) {
+            const MAT_TYPE* m2rp = m2p + j * mat2.stride;
+            #pragma omp simd
+            for (size_t k = 0; k < K; k++) {
+                drp[j] += m1rp[k] * m2rp[k];
+            }
+        }
+    }
+    return;
 }
 
 // plain matrix multiplication with moderate acceleration with openmp parallel
@@ -348,6 +426,8 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2) {
     return;
 }
 
+// This function can be used to create a matrix with the same entries but different strides from the source matrix.
+// Specially, this can be used to create a `real` matrix from a slice.
 void mat_assign(sm dst, sm src) {
     assert(dst.rows == src.rows && dst.cols == src.cols);
     if (dst.p == src.p) {
