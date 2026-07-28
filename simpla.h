@@ -32,7 +32,7 @@ typedef struct {
                                                  .cols = (cole) - (colb) + 1, \
                                                  .stride = (mat).stride})
 // #mat: stringify
-#define MAT_PRINT(mat) mat_print(mat, #mat)
+#define _mat_print(mat) mat_print(mat, #mat)
 
 sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
 sm mat_alloc(size_t rows, size_t cols);
@@ -45,7 +45,7 @@ void mat_rand(sm mat, MAT_TYPE l, MAT_TYPE u);
 void mat_eye(sm mat);
 void mat_transpose(sm dst, sm mat);
 void mat_transpose_blocked(sm dst, sm mat);
-void mat_add(sm dst, MAT_TYPE k1, MAT_TYPE k2, sm mat1, sm mat2);
+void mat_add(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2);
 void mat_addn(sm dst, sm mat, MAT_TYPE a);
 void mat_dotn(sm dst, sm mat, MAT_TYPE a);
 MAT_TYPE vec_dot(sm mat1, sm mat2);
