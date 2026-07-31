@@ -18,6 +18,6 @@ You can browse [simpla.h](./simpla.h) directly and guess out what the functions 
 
 Although this library's major goal is not replacing any of the existing ones (OpenBlas, Intel MKL ...), the performance of a computational library is always of concern.
 
-Here's some (informal) statistics on my personal computer (Dell Inspiron 5490, CPU: Intel Core i5-10210U, GPU: Intel UHD Graphics, 8GB Memory, Fedora 43):
+Here's some (informal) statistics on my personal computer (Dell Inspiron 5490, CPU: Intel Core i5-10210U, GPU: Intel UHD Graphics, 8GB Memory, Fedora 44):
 
 (NOT FINISHED...)
