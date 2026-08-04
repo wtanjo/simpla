@@ -62,4 +62,6 @@ MAT_TYPE mat_det(sm mat);
 void linsys_lu(sm x, sm A, sm b);
 void linsys_qr(sm x, sm A, sm b);
 
+void man(char *fn);
+
 #endif // SIMPLA_H_

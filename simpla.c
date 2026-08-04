@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "simpla.h"
+#include "man.h"
 
 #define BLK (128)
 
@@ -489,5 +490,23 @@ void linsys_qr(sm x, sm A, sm b)
 {
     assert(x.cols == 1 && b.cols == 1 && A.cols == b.rows && A.rows == x.rows);
     
+    return;
+}
+
+void man(char *fn)
+{
+    if (strcmp(fn, "MAT_TYPE") == 0) {
+        printf(MAN_TYPE);
+    } else if (strcmp(fn, "sm") == 0) {
+        printf(MAN_SM);
+    } else if (strcmp(fn, "MATI") == 0) {
+        printf(MAN_MATI);
+    } else if (strcmp(fn, "SLICE") == 0) {
+        printf(MAN_SLICE);
+    } else if (strcmp(fn, "_mat_print") == 0 || strcmp(fn, "MAT_PRINT") == 0) {
+        printf(MAN_PRINT);
+    } else {
+        printf(MAN_ERR, fn);
+    }
     return;
 }

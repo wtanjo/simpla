@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <simpla/simpla.h>
+#include "simpla.h"
 
 #define MAT_TYPE float
 
@@ -10,6 +10,8 @@ int main(void) {
     mat_fill(A, 1);
     mat_clear(A);
     _mat_print(A);
+
+    man("MAT_TYPE");
 
     return 0;
 }
