@@ -1,7 +1,6 @@
 #ifndef SIMPLA_H_
 #define SIMPLA_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #ifndef MAT_TYPE
@@ -9,7 +8,8 @@
 #endif // MAT_TYPE
 
 static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
-static inline uint64_t xorshift64(void) {
+static inline uint64_t xorshift64(void)
+{
     uint64_t x = rng_state;
     x ^= x << 13;
     x ^= x >> 7;
@@ -18,10 +18,12 @@ static inline uint64_t xorshift64(void) {
     return rng_state;
 }
 
-typedef struct {
-    MAT_TYPE* p;
-    size_t rows; // number of rows
-    size_t cols; // number of columns
+typedef
+struct
+{
+    MAT_TYPE *p;
+    size_t rows;   // number of rows
+    size_t cols;   // number of columns
     size_t stride; // specifically for slicing
 } sm;
 
@@ -34,7 +36,7 @@ typedef struct {
 // #mat: stringify
 #define _mat_print(mat) mat_print(mat, #mat)
 
-sm mat_from(MAT_TYPE* array, size_t rows, size_t cols);
+sm mat_from(MAT_TYPE *array, size_t rows, size_t cols);
 sm mat_alloc(size_t rows, size_t cols);
 void mat_free(sm mat);
 void mat_print(sm mat, const char* name);

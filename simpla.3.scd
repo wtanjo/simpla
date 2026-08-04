@@ -34,10 +34,12 @@ int main(void) {
 The core data structure is *sm*, which stands for NOT for Sadism & Masochism BUT for *s*imple *m*atrix:
 
 ```
-typedef struct {
+typedef
+struct
+{
     MAT_TYPE* p;
-    size_t rows; // number of rows
-    size_t cols; // number of columns
+    size_t rows;   // number of rows
+    size_t cols;   // number of columns
     size_t stride; // specifically for slicing
 } sm;
 ```
