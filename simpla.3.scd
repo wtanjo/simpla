@@ -7,7 +7,7 @@ simpla - A simple linear algebra library written in C.
 # SYNOPSIS
 
 ```
-#include <simpla.h>
+#include <simpla/simpla.h>
 
 #define MAT_TYPE float
 
