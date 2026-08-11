@@ -505,6 +505,16 @@ void man(char *fn)
         printf(MAN_SLICE);
     } else if (strcmp(fn, "_mat_print") == 0 || strcmp(fn, "MAT_PRINT") == 0) {
         printf(MAN_PRINT);
+    } else if (strcmp(fn, "mat_from") == 0) {
+        printf(MAN_FROM);
+    } else if (strcmp(fn, "mat_alloc") == 0) {
+        printf(MAN_ALLOC);
+    } else if (strcmp(fn, "mat_free") == 0) {
+        printf(MAN_FREE);
+    } else if (strcmp(fn, "mat_clear") == 0) {
+        printf(MAN_CLEAR);
+    } else if (strcmp(fn, "mat_fill") == 0) {
+        printf(MAN_FILL);
     } else {
         printf(MAN_ERR, fn);
     }

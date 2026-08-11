@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS ?= -Wall -Wextra -ffast-math -fopenmp -O3 -march=native
+CFLAGS ?= -Wall -Wextra -std=c11 -ffast-math -fopenmp -O3 -march=native
 LIBS ?=
 DFLAGS ?= -fPIC -shared
 SFLAGS ?= -c
@@ -9,7 +9,7 @@ PREFIX ?= /usr/local
 
 all: lib include man
 
-lib: simpla.c man.h
+lib: simpla.c simpla.o man.h
 	mkdir -p lib
 	$(CC) $(CFLAGS) $(DFLAGS) -o lib/libsimpla.so simpla.c $(LIBS)
 	$(CC) $(CFLAGS) $(SFLAGS) -o lib/simpla.o simpla.c $(LIBS)
