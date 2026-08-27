@@ -11,7 +11,7 @@ int main(void) {
     mat_clear(A);
     _mat_print(A);
 
-    man("MAT_TYPE");
+    man("man");
 
     return 0;
 }

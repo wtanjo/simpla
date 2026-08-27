@@ -7,9 +7,9 @@ EGLIBS ?= -I./include -L./lib -lsimpla
 
 PREFIX ?= /usr/local
 
-all: lib include man
+all: lib include
 
-lib: simpla.c simpla.o man.h
+lib: simpla.c man.h
 	mkdir -p lib
 	$(CC) $(CFLAGS) $(DFLAGS) -o lib/libsimpla.so simpla.c $(LIBS)
 	$(CC) $(CFLAGS) $(SFLAGS) -o lib/simpla.o simpla.c $(LIBS)
@@ -18,6 +18,10 @@ lib: simpla.c simpla.o man.h
 include: simpla.h
 	mkdir -p include
 	cp simpla.h include/
+
+man: simpla.3.scd
+	mkdir -p man3
+	scdoc < simpla.3.scd > man3/simpla.3
 
 example: example.c
 	$(CC) -o example example.c $(EGLIBS)
@@ -31,20 +35,20 @@ clean:
 	@if [ -f example ]; then rm example; fi
 	@if [ -d man3 ]; then rm -rf man3; fi
 
-install: lib include man
+install: lib include
 	install -d $(PREFIX)/include/simpla/
-	install -Dm644 lib/simpla.o lib/libsimpla.a lib/libsimpla.so $(PREFIX)/lib/
+	install -Dm644 lib/libsimpla.a lib/libsimpla.so $(PREFIX)/lib/
 	install -Dm644 include/simpla.h $(PREFIX)/include/simpla/
+
+man-install: man
 	install -d $(PREFIX)/share/man/man3/
 	install -D man3/simpla.3 $(PREFIX)/share/man/man3/
 
 uninstall:
-	rm $(PREFIX)/lib/libsimpla.a $(PREFIX)/lib/libsimpla.so $(PREFIX)/lib/simpla.o
+	rm $(PREFIX)/lib/libsimpla.a $(PREFIX)/lib/libsimpla.so
 	rm -rf $(PREFIX)/include/simpla
+
+man-uninstall:
 	rm -rf $(PREFIX)/share/man/man3/simpla.3
 
-man: simpla.3.scd
-	mkdir -p man3
-	scdoc < simpla.3.scd > man3/simpla.3
-
-.PHONY: all clean runeg release install uninstall man
+.PHONY: all clean runeg release install uninstall man man-install man-uninstall

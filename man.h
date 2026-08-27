@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+#define \
+    MAN_MAN \
+    "You can use this function to get a manual for this library without any external dependencies like mandoc, just with C code.\nThe acceptable arguments are: \"man\", \"MAT_TYPE\", \"sm\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\"\n"
+
 #define                                                                 \
     MAN_TYPE                                                            \
     "MAT_TYPE is a user-defined macro used for indicating which data type the entried of the matrix (sm) should be.\n"

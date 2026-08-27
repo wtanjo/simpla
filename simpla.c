@@ -495,7 +495,9 @@ void linsys_qr(sm x, sm A, sm b)
 
 void man(char *fn)
 {
-    if (strcmp(fn, "MAT_TYPE") == 0) {
+    if (strcmp(fn, "man") == 0) {
+        printf(MAN_MAN);
+    } else if (strcmp(fn, "MAT_TYPE") == 0) {
         printf(MAN_TYPE);
     } else if (strcmp(fn, "sm") == 0) {
         printf(MAN_SM);
