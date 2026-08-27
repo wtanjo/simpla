@@ -10,7 +10,7 @@ The major goal and principle is that it should provide simple interfaces for lin
 - gcc
 - scdoc (for building manpage, see below)
 
-Clone this repo and do `make` to make the libraries. Do `(sudo) make install` if you want easy access to this library. You can modified [Makefile](./Makefile) according to your specific needs.
+Clone this repo and do `make` to compile the libraries. Do `(sudo) make install` if you want easy access to this library. You can modified [Makefile](./Makefile) according to your specific needs.
 
 You can browse [simpla.h](./simpla.h) directly and guess out what the functions and the parameters does, and I believe you'll guess them right easily. Still, here's a manpage for you, but you'll need scdoc to build it. This is not set as default, and you'll need to do `make man` and `make man-install` to build and install it. After it you can do `man simpla` in any shell to check the manual.
 
