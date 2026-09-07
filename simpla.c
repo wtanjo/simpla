@@ -448,7 +448,7 @@ void mat_dot_blocked(sm dst, sm mat1, sm mat2)
 }
 
 // This function can be used to create a matrix with the same entries but different strides from the source matrix.
-// Specially, this can be used to create a `real` matrix from a slice.
+// Specially, this can be used to create a `proper` matrix from a slice.
 void mat_assign(sm dst, sm src)
 {
     assert(dst.rows == src.rows && dst.cols == src.cols);

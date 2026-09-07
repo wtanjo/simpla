@@ -1,6 +1,6 @@
 # simpla
 
-A simple linear alagebra library written in C. Basically for learning and my personal use.
+A simple linear algebra library written in C. Basically for learning and my personal use.
 
 The major goal and principle is that it should provide simple interfaces for linear algebra computation.
 
