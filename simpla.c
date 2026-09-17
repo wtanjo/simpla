@@ -479,6 +479,32 @@ MAT_TYPE mat_det(sm mat)
     return 0;
 }
 
+// compute the kronecker product of k1 * mat1 and k2 * mat2
+void mat_kron(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2)
+{
+    assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
+    assert(dst.rows == mat2.rows && dst.cols == mat2.cols);
+    const size_t M = dst.rows;
+    const size_t N = dst.cols;
+    MAT_TYPE *dp = dst.p;
+    const MAT_TYPE *m1p = mat1.p;
+    const MAT_TYPE *m2p = mat2.p;
+    MAT_TYPE *drp;
+    const MAT_TYPE *m1rp;
+    const MAT_TYPE *m2rp;
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < M; i++) {
+        drp = dp + i * dst.stride;
+        m1rp = m1p + i * mat1.stride;
+        m2rp = m2p + i * mat2.stride;
+        for (size_t j = 0; j < N; j++) {
+            drp[j] = k1 * m1rp[j] * k2 * m2rp[j];
+        }
+    }
+    return;
+}
+
 void linsys_lu(sm x, sm A, sm b)
 {
     assert(x.cols == 1 && b.cols == 1 && A.cols == b.rows && A.rows == x.rows);
