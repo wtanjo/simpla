@@ -66,9 +66,7 @@ void mat_clear(sm mat)
     } else {
         for (size_t i = 0; i < M; i++) {
             MAT_TYPE *mrp = mp + i * S;
-            for (size_t j = 0; j < N; j++) {
-                memset(mrp, 0, sizeof(MAT_TYPE) * N);
-            }
+            memset(mrp, 0, sizeof(MAT_TYPE) * N);
         }
     }
     return;
@@ -91,8 +89,20 @@ void mat_fill(sm mat, MAT_TYPE e)
     return;
 }
 
+static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
+static inline uint64_t xorshift64(void)
+{
+    uint64_t x = rng_state;
+    x ^= x << 13;
+    x ^= x >> 7;
+    x ^= x << 17;
+    rng_state = x;
+    return rng_state;
+}
+
 void mat_srand(uint64_t seed)
 {
+    printf("Warning: 0 is a fixed point of xorshift. Your random numbers will be all 0.");
     rng_state = seed;
     return;
 }
@@ -294,20 +304,21 @@ void mat_dotn(sm dst, sm mat, MAT_TYPE a)
     return;
 }
 
-MAT_TYPE vec_dot(sm mat1, sm mat2)
+// This function fails with column vectors with stride != 1
+MAT_TYPE vec_dot(sm vec1, sm vec2)
 {
-    assert(mat1.rows == 1 || mat1.cols ==1);
-    assert(mat2.rows == 1 || mat2.cols ==1);
-    const size_t N = mat1.cols == 1 ? mat1.rows : mat1.cols;
-    const size_t M = mat2.cols == 1 ? mat2.rows : mat2.cols;
+    assert(vec1.rows == 1 || vec1.cols ==1);
+    assert(vec2.rows == 1 || vec2.cols ==1);
+    const size_t N = vec1.cols == 1 ? vec1.rows : vec1.cols;
+    const size_t M = vec2.cols == 1 ? vec2.rows : vec2.cols;
     assert(N == M);
     MAT_TYPE prod = 0;
-    const MAT_TYPE *m1p = mat1.p;
-    const MAT_TYPE *m2p = mat2.p;
+    const MAT_TYPE *v1p = vec1.p;
+    const MAT_TYPE *v2p = vec2.p;
     
     #pragma omp parallel for reduction(+:prod)
     for (size_t i = 0; i < N; i++) {
-        prod += m1p[i] * m2p[i];
+        prod += v1p[i] * v2p[i];
     }
     return prod;
 }
@@ -478,8 +489,8 @@ MAT_TYPE mat_det(sm mat)
     return 0;
 }
 
-// compute the kronecker product of k1 * mat1 and k2 * mat2
-void mat_kron(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2)
+// compute the Hadamard product of k1 * mat1 and k2 * mat2
+void mat_hadamard(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2)
 {
     assert(dst.rows == mat1.rows && dst.cols == mat1.cols);
     assert(dst.rows == mat2.rows && dst.cols == mat2.cols);

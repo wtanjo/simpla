@@ -7,17 +7,6 @@
 #define MAT_TYPE float
 #endif // MAT_TYPE
 
-static uint64_t rng_state = 0x9e3779b97f4a7c15ULL;
-static inline uint64_t xorshift64(void)
-{
-    uint64_t x = rng_state;
-    x ^= x << 13;
-    x ^= x >> 7;
-    x ^= x << 17;
-    rng_state = x;
-    return rng_state;
-}
-
 typedef
 struct
 {
@@ -58,7 +47,7 @@ void mat_dot(sm dst, sm mat1, sm mat2);
 void mat_dot_blocked(sm dst, sm mat1, sm mat2);
 void mat_assign(sm dst, sm src);
 MAT_TYPE mat_det(sm mat);
-void mat_kron(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2);
+void mat_hadamard(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2);
 
 void linsys_lu(sm x, sm A, sm b);
 void linsys_qr(sm x, sm A, sm b);
