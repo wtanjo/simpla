@@ -63,6 +63,4 @@ void mat_kron(sm dst, MAT_TYPE k1, sm mat1, MAT_TYPE k2, sm mat2);
 void linsys_lu(sm x, sm A, sm b);
 void linsys_qr(sm x, sm A, sm b);
 
-void man(char *fn);
-
 #endif // SIMPLA_H_

@@ -9,7 +9,7 @@ PREFIX ?= /usr/local
 
 all: lib include
 
-lib: simpla.c man.h
+lib: simpla.c
 	mkdir -p lib
 	$(CC) $(CFLAGS) $(DFLAGS) -o lib/libsimpla.so simpla.c $(LIBS)
 	$(CC) $(CFLAGS) $(SFLAGS) -o lib/simpla.o simpla.c $(LIBS)

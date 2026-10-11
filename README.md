@@ -14,12 +14,6 @@ Clone this repo and do `make` to compile the libraries. Do `(sudo) make install`
 
 You can browse [simpla.h](./simpla.h) directly and guess out what the functions and the parameters does, and I believe you'll guess them right easily. Still, here's a manpage for you, but you'll need scdoc to build it. This is not set as default, and you'll need to do `make man` and `make man-install` to build and install it. After it you can do `man simpla` in any shell to check out the manual.
 
-Yet another way to the manual is the builtin man function. Try in C code
-```C
-man("man");
-```
-to learn how to use this function.
-
 ## Performance
 
 Although this library's major goal is not replacing any of the existing ones (OpenBlas, Intel MKL ...), the performance of a computational library is always of concern.
